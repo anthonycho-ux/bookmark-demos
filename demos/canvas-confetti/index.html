@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>canvas-confetti — interactive demo</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin:0; min-height:100vh; display:flex; flex-direction:column; align-items:center;
+         justify-content:center; gap:1.2rem; background:#0d1117; color:#e6edf3;
+         font-family:ui-monospace,Menlo,monospace; }
+  h1 { font-size:1.1rem; font-weight:600; margin:0; }
+  h1 a { color:#58a6ff; text-decoration:none; }
+  .row { display:flex; gap:1.4rem; flex-wrap:wrap; justify-content:center; }
+  label { display:flex; flex-direction:column; font-size:.72rem; color:#8b949e; gap:.3rem; }
+  input[type=range] { width:160px; accent-color:#58a6ff; }
+  output { color:#e6edf3; }
+  button { padding:.7rem 1.8rem; font:inherit; font-size:1rem; border:0; border-radius:8px;
+           background:#238636; color:#fff; cursor:pointer; }
+  button:hover { background:#2ea043; }
+  #src { font-size:.68rem; color:#8b949e; }
+</style>
+</head>
+<body>
+<h1><a href="https://github.com/catdad/canvas-confetti">canvas-confetti</a> — live parameter demo</h1>
+<div class="row">
+  <label>particles <output id="oN">200</output>
+    <input id="n" type="range" min="20" max="800" value="200"></label>
+  <label>spread <output id="oS">70</output>°
+    <input id="s" type="range" min="20" max="360" value="70"></label>
+  <label>velocity <output id="oV">45</output>
+    <input id="v" type="range" min="10" max="100" value="45"></label>
+</div>
+<button id="fire">FIRE 🎉</button>
+<div id="src">picked from X bookmarks · built by the bookmark-demos pipeline</div>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+<script>
+  const $ = id => document.getElementById(id);
+  for (const [inp, out] of [['n','oN'],['s','oS'],['v','oV']])
+    $(inp).oninput = () => $(out).textContent = $(inp).value;
+  $('fire').onclick = () => confetti({
+    particleCount: +$('n').value,
+    spread: +$('s').value,
+    startVelocity: +$('v').value,
+    origin: { y: 0.6 }
+  });
+  // auto-fire once on load so screenshots prove the render
+  setTimeout(() => $('fire').click(), 600);
+</script>
+</body>
+</html>
