@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>boids — flocking</title>
+<style>
+  html,body{margin:0;height:100%;background:#0d1117;color:#e6edf3;font-family:ui-monospace,monospace}
+  canvas{display:block;width:100%;height:calc(100% - 64px)}
+  .bar{display:flex;gap:18px;align-items:center;padding:10px 16px;border-top:1px solid #21262d;font-size:12px}
+  label{display:flex;gap:8px;align-items:center;color:#8b949e}
+  input[type=range]{width:120px;accent-color:#58a6ff}
+  .v{color:#e6edf3;min-width:3ch}
+</style></head>
+<body>
+<canvas id="c"></canvas>
+<div class="bar">
+  <label>separation <input id="sep" type="range" min="0" max="3" step="0.1" value="1.4"><span class="v" id="vsep">1.4</span></label>
+  <label>alignment <input id="ali" type="range" min="0" max="3" step="0.1" value="1.0"><span class="v" id="vali">1.0</span></label>
+  <label>cohesion <input id="coh" type="range" min="0" max="3" step="0.1" value="0.9"><span class="v" id="vcoh">0.9</span></label>
+  <label>count <input id="cnt" type="range" min="20" max="400" step="10" value="160"><span class="v" id="vcnt">160</span></label>
+</div>
+<script>
+const cv=document.getElementById('c'),cx=cv.getContext('2d');
+let W,H; const fit=()=>{W=cv.width=cv.clientWidth*devicePixelRatio;H=cv.height=cv.clientHeight*devicePixelRatio};
+addEventListener('resize',fit);fit();
+const P={sep:1.4,ali:1.0,coh:0.9,n:160};
+for(const k of['sep','ali','coh','cnt']){const el=document.getElementById(k);el.oninput=()=>{P[k==='cnt'?'n':k]=+el.value;document.getElementById('v'+k).textContent=el.value}}
+const R=70,MAXV=4.2*devicePixelRatio;
+let B=[];
+const spawn=()=>({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*MAXV,vy:(Math.random()-.5)*MAXV});
+const sync=()=>{while(B.length<P.n)B.push(spawn());B.length=P.n};
+function step(){
+  sync();
+  for(const b of B){
+    let ns=0,sx=0,sy=0,ax=0,ay=0,cx2=0,cy2=0;
+    for(const o of B){if(o===b)continue;const dx=b.x-o.x,dy=b.y-o.y,d2=dx*dx+dy*dy;
+      if(d2<R*R*4){ns++;ax+=o.vx;ay+=o.vy;cx2+=o.x;cy2+=o.y;if(d2<R*R*.36){sx+=dx/d2;sy+=dy/d2}}}
+    if(ns){b.vx+=(sx*P.sep*.9+(ax/ns-b.vx)*P.ali*.06+(cx2/ns-b.x)*P.coh*.0015);
+           b.vy+=(sy*P.sep*.9+(ay/ns-b.vy)*P.ali*.06+(cy2/ns-b.y)*P.coh*.0015)}
+    const v=Math.hypot(b.vx,b.vy)||1;if(v>MAXV){b.vx=b.vx/v*MAXV;b.vy=b.vy/v*MAXV}
+    b.x+=b.vx;b.y+=b.vy;
+    if(b.x<0)b.x+=W;if(b.x>W)b.x-=W;if(b.y<0)b.y+=H;if(b.y>H)b.y-=H;
+  }
+}
+function draw(){
+  cx.fillStyle='#0d1117';cx.fillRect(0,0,W,H);
+  for(const b of B){const a=Math.atan2(b.vy,b.vx),s=6*devicePixelRatio;
+    cx.save();cx.translate(b.x,b.y);cx.rotate(a);
+    cx.fillStyle='#58a6ff';cx.beginPath();cx.moveTo(s,0);cx.lineTo(-s*.7,s*.5);cx.lineTo(-s*.7,-s*.5);cx.closePath();cx.fill();cx.restore()}
+}
+(function loop(){step();draw();requestAnimationFrame(loop)})();
+</script>
+</body></html>
