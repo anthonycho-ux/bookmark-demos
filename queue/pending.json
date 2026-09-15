@@ -1,0 +1,9 @@
+{
+ "status": "ok",
+ "id": "1900000000000000001",
+ "url": "https://x.com/example/status/1900000000000000001",
+ "text": "Interactive boids flocking simulation with adjustable separation, alignment, and cohesion sliders",
+ "slug": "2026-09-15-interactive-boids-flocking-sim",
+ "spec": "Build a self-contained static demo for this bookmarked post: \"Interactive boids flocking simulation with adjustable separation, alignment, and cohesion sliders\" (source: https://x.com/example/status/1900000000000000001). Single index.html under demos/2026-09-15-interactive-boids-flocking-sim/ \u2014 vanilla HTML/CSS/JS only, no external network calls, dark clean style. It must render standalone over file:// and pages.dev.",
+ "created": "2026-09-15"
+}
