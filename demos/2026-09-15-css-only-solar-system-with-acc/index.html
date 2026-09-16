@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CSS-only Solar System — accurate relative orbital periods</title>
+<style>
+  /*
+   * CSS-only solar system. No JS. Orbits are real relative periods:
+   * Earth = 10s per orbit; every other planet scales from its true
+   * orbital period in Earth-years.
+   *
+   *   Mercury 0.241y →  2.41s    Venus   0.615y →  6.15s
+   *   Earth   1.000y → 10.00s    Mars    1.881y → 18.81s
+   *   Jupiter 11.86y → 118.6s    Saturn  29.45y → 294.5s
+   *   Uranus  84.02y → 840.2s    Neptune 164.8y → 1648s
+   */
+  :root {
+    --bg: #0a0d14;
+    --ink: #d7dde8;
+    --dim: #7d8698;
+    --ring: rgba(255,255,255,.07);
+    --accent: #f0b429;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink);
+    font: 15px/1.5 -apple-system, "SF Pro Text", system-ui, sans-serif;
+    display: grid; place-items: center; padding: 40px 20px;
+  }
+  .wrap { width: min(1060px, 100%); }
+  h1 { font-size: 20px; font-weight: 600; margin: 0 0 4px; }
+  .sub { color: var(--dim); margin: 0 0 28px; max-width: 640px; }
+  .sub code { color: var(--accent); font-size: 13px; }
+
+  .system {
+    position: relative; width: min(88vmin, 860px); aspect-ratio: 1;
+    margin: 0 auto;
+  }
+  .sun {
+    position: absolute; left: 50%; top: 50%; width: 4.2%; aspect-ratio: 1;
+    transform: translate(-50%,-50%); border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #ffe9a8, #f0b429 55%, #c87f0a);
+    box-shadow: 0 0 30px 6px rgba(240,180,41,.35);
+  }
+  .orbit {
+    position: absolute; left: 50%; top: 50%;
+    border: 1px solid var(--ring); border-radius: 50%;
+    transform: translate(-50%,-50%);
+  }
+  /* planet carrier: rotates around the sun */
+  .carrier {
+    position: absolute; left: 50%; top: 50%; width: 0; height: 0;
+    animation: spin linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .planet {
+    position: absolute; left: 0; top: 0; border-radius: 50%;
+    aspect-ratio: 1;
+    transform: translate(-50%,-50%);
+  }
+
+  /* orbital radii (vmin-ish % of .system) — compressed log spacing so all 8 fit */
+  .o-mercury { width: 11%;  } .o-venus  { width: 16%;  }
+  .o-earth   { width: 21%;  } .o-mars   { width: 26%;  }
+  .o-jupiter { width: 40%;  } .o-saturn { width: 54%;  }
+  .o-uranus  { width: 72%;  } .o-neptune{ width: 92%;  }
+  .orbit { aspect-ratio: 1; }
+  .o-mercury, .o-venus, .o-earth, .o-mars,
+  .o-jupiter, .o-saturn, .o-uranus, .o-neptune { aspect-ratio: 1; }
+
+  /* accurate relative periods — Earth 10s baseline; negative delays just
+     de-stack the t=0 starting line, periods stay exact */
+  .p-mercury { animation-duration: 2.41s;  animation-delay: -0.9s;  }
+  .p-venus   { animation-duration: 6.15s;  animation-delay: -3.4s;  }
+  .p-earth   { animation-duration: 10s;    animation-delay: -2.5s;  }
+  .p-mars    { animation-duration: 18.81s; animation-delay: -11s;   }
+  .p-jupiter { animation-duration: 118.6s; animation-delay: -40s;   }
+  .p-saturn  { animation-duration: 294.5s; animation-delay: -170s;  }
+  .p-uranus  { animation-duration: 840.2s; animation-delay: -300s;  }
+  .p-neptune { animation-duration: 1648s;  animation-delay: -900s;  }
+
+  /* planet dots: roughly relative apparent size, floor for visibility */
+  .pl-mercury { width: 7px;  background: #9c8e84; box-shadow: 0 0 4px #9c8e84; }
+  .pl-venus   { width: 12px; background: #e8c07a; box-shadow: 0 0 6px #e8c07a88; }
+  .pl-earth   { width: 13px; background: #4d9de0; box-shadow: 0 0 6px #4d9de088; }
+  .pl-mars    { width: 9px;  background: #d96f4e; box-shadow: 0 0 5px #d96f4e88; }
+  .pl-jupiter { width: 32px; background: linear-gradient(#d8b48e,#b98a5e); box-shadow: 0 0 10px #b98a5e66; }
+  .pl-saturn  { width: 27px; background: #e3cf9e; box-shadow: 0 0 8px #e3cf9e66; }
+  .pl-uranus  { width: 19px; background: #8fd5d8; box-shadow: 0 0 7px #8fd5d866; }
+  .pl-neptune { width: 18px; background: #5b7fd4; box-shadow: 0 0 7px #5b7fd466; }
+  .pl-saturn::after {
+    content: ""; position: absolute; left: 50%; top: 50%;
+    width: 220%; height: 34%; transform: translate(-50%,-50%) rotate(-18deg);
+    border: 2px solid rgba(227,207,158,.5); border-radius: 50%;
+  }
+
+  table.legend {
+    margin: 34px auto 0; border-collapse: collapse; font-size: 13px;
+    color: var(--dim);
+  }
+  .legend td, .legend th {
+    padding: 4px 12px; border-bottom: 1px solid rgba(255,255,255,.06);
+    text-align: left;
+  }
+  .legend th { color: var(--ink); font-weight: 600; font-size: 12px;
+    text-transform: uppercase; letter-spacing: .06em; }
+  .legend .sw { display: inline-block; width: 9px; height: 9px;
+    border-radius: 50%; margin-right: 7px; vertical-align: baseline; }
+
+  footer { margin-top: 30px; color: var(--dim); font-size: 12px; }
+  footer code { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>CSS-only solar system</h1>
+  <p class="sub">Every orbit is a pure CSS animation. Periods are accurate
+  relative to Earth: <code>Earth = 10s</code>, and each planet's
+  <code>animation-duration</code> is its true orbital period scaled the same
+  way. No JavaScript, no assets, no network.</p>
+
+  <div class="system">
+    <div class="sun"></div>
+
+    <!-- each .orbit carries the ring; the .carrier is a zero-size pivot at
+         the center that rotates; the planet dot is offset out to the ring -->
+    <div class="orbit o-mercury"></div>
+    <div class="orbit o-venus"></div>
+    <div class="orbit o-earth"></div>
+    <div class="orbit o-mars"></div>
+    <div class="orbit o-jupiter"></div>
+    <div class="orbit o-saturn"></div>
+    <div class="orbit o-uranus"></div>
+    <div class="orbit o-neptune"></div>
+
+    <div class="carrier p-mercury"><div class="planet pl-mercury" style="top:calc(-1 * min(88vmin,860px) * .055)"></div></div>
+    <div class="carrier p-venus"><div class="planet pl-venus" style="top:calc(-1 * min(88vmin,860px) * .08)"></div></div>
+    <div class="carrier p-earth"><div class="planet pl-earth" style="top:calc(-1 * min(88vmin,860px) * .105)"></div></div>
+    <div class="carrier p-mars"><div class="planet pl-mars" style="top:calc(-1 * min(88vmin,860px) * .13)"></div></div>
+    <div class="carrier p-jupiter"><div class="planet pl-jupiter" style="top:calc(-1 * min(88vmin,860px) * .20)"></div></div>
+    <div class="carrier p-saturn"><div class="planet pl-saturn" style="top:calc(-1 * min(88vmin,860px) * .27)"></div></div>
+    <div class="carrier p-uranus"><div class="planet pl-uranus" style="top:calc(-1 * min(88vmin,860px) * .36)"></div></div>
+    <div class="carrier p-neptune"><div class="planet pl-neptune" style="top:calc(-1 * min(88vmin,860px) * .46)"></div></div>
+  </div>
+
+  <table class="legend">
+    <tr><th>Planet</th><th>True period</th><th>Demo period</th></tr>
+    <tr><td><span class="sw" style="background:#9c8e84"></span>Mercury</td><td>0.241 y</td><td>2.41 s</td></tr>
+    <tr><td><span class="sw" style="background:#e8c07a"></span>Venus</td><td>0.615 y</td><td>6.15 s</td></tr>
+    <tr><td><span class="sw" style="background:#4d9de0"></span>Earth</td><td>1.000 y</td><td>10.00 s</td></tr>
+    <tr><td><span class="sw" style="background:#d96f4e"></span>Mars</td><td>1.881 y</td><td>18.81 s</td></tr>
+    <tr><td><span class="sw" style="background:#d8b48e"></span>Jupiter</td><td>11.86 y</td><td>118.6 s</td></tr>
+    <tr><td><span class="sw" style="background:#e3cf9e"></span>Saturn</td><td>29.45 y</td><td>294.5 s</td></tr>
+    <tr><td><span class="sw" style="background:#8fd5d8"></span>Uranus</td><td>84.02 y</td><td>840.2 s</td></tr>
+    <tr><td><span class="sw" style="background:#5b7fd4"></span>Neptune</td><td>164.8 y</td><td>1648 s</td></tr>
+  </table>
+
+  <footer>
+    Source bookmark: <code>x.com/i/bookmarks</code> —
+    “CSS-only solar system with accurate relative orbital periods”.
+    Radii are log-compressed for display; periods are exact.
+  </footer>
+</div>
+</body>
+</html>
